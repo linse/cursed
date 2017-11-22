@@ -33,14 +33,11 @@ class Map {
       Pair cursor = { 0, 0 };
       for (; cursor.x <= m; cursor.x++) {
         for (; cursor.y <= n; cursor.y++) {
+          Tile t = Tile{ true, false };
           if (rand() % 100 < 15) { // 15 % walls
-            Tile t = { true };
-            set(cursor.x, cursor.y, t);
-
-            attron(COLOR_PAIR(1));
-            mvprintw(cursor.x, cursor.y, "W");
-            attroff(COLOR_PAIR(1));
+            t = Tile{ true, true };
           }
+          set(cursor.x, cursor.y, t);
           refresh();
           usleep(DELAY);
         }
@@ -50,8 +47,6 @@ class Map {
     void set(int x, int y, Tile t) {
       map[y * m + x] = t;
     }
-    //void clear(int x, int y) {
-    //}
     Tile get(int x, int y) {
       return map[y * m + x];
     }
@@ -117,6 +112,7 @@ bool inBounds(State *s, int c) {
 void step(State *s, int c) {
   if (!inBounds(s, c)) {
     // TODO moveMap(int c);
+    
     return;
   }
   //clear();
@@ -152,12 +148,9 @@ void maze(State *s) {
   for (; cursor.x <= s->max.x; cursor.x++) {
     for (; cursor.y <= s->max.y; cursor.y++) {
       if (s->map.get(cursor.x, cursor.y).isWall) { // 15 % walls
-        init_pair(1, COLOR_RED, COLOR_BLACK);
-	attron(COLOR_PAIR(1));
+        attron(COLOR_PAIR(1));
         mvprintw(cursor.x, cursor.y, "W");
         attroff(COLOR_PAIR(1));
-      } else {
-        mvprintw(cursor.x, cursor.y, " ");
       }
       refresh();
     }
@@ -168,20 +161,22 @@ void maze(State *s) {
 int main(int argc, const char * argv[]) {
   init();
   int max_x, max_y;
-  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES*4, COLS*4) };
+  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS) };
 
 //  info();
   s.map.generate();
+  maze(&s);
 
-//  // step 0
-////  clear();
-//  mvprintw(s.cursor.x, s.cursor.y, "@");
+  // step 0
+//  clear();
+  mvprintw(s.cursor.x, s.cursor.y, "@");
+  getch();
 ////
-//  while(1) {
-////    maze(&s);
-//    int c = getch();
-//    step(&s, c);
-//  }
+  while(1) {
+//    maze(&s);
+    int c = getch();
+    step(&s, c);
+  }
   endwin();
   return 0;
 }
