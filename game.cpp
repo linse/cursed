@@ -85,7 +85,7 @@ void init() {
   init_pair(1, COLOR_GREEN, COLOR_BLACK);
 }
 
-bool inBounds(State *s, int c) {
+Pair inFuture(State *s, int c) {
   Pair future = {s->cursor.x, s->cursor.y};
 
   switch(c) {
@@ -104,6 +104,11 @@ bool inBounds(State *s, int c) {
     default:
         break;
   }
+  return future;
+}
+
+bool inBounds(State *s, int c) {
+  Pair future = inFuture(s, c);
   bool in_bounds = (0 <= future.x && future.x <= s->max.x
                 &&  0 <= future.y && future.y <= s->max.y);
   return in_bounds; // future not out of bounds && future no wall
