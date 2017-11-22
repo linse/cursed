@@ -1,23 +1,67 @@
 #include <iostream>
+#include <cstdlib>
+#include <vector>
 #include <ncurses.h>
 #include <unistd.h>
+
+#include <climits>    /* for CHAR_BIT */
+#include <stdint.h>   /* for uint32_t */
+
 using namespace std;
 
-#define DELAY 30000
-//usleep(DELAY);
+#define DELAY 3
 
 class Pair {
   public: int x; int y;
+};
+
+class Tile {
+  public: bool isDark;
+  public: bool isWall;
+};
+
+class Map {
+  private:
+    int m;
+    int n;
+    vector<Tile> map;
+  public:
+    Map(int m, int n): m(m), n(n), map(m*n) {
+    } 
+    void generate() {
+      clear();
+      Pair cursor = { 0, 0 };
+      for (; cursor.x <= m; cursor.x++) {
+        for (; cursor.y <= n; cursor.y++) {
+          if (rand() % 100 < 15) { // 15 % walls
+            Tile t = { true };
+            set(cursor.x, cursor.y, t);
+            mvprintw(cursor.x, cursor.y, "W");
+          }
+          refresh();
+          usleep(DELAY);
+        }
+        cursor.y = 0;
+      }
+    }
+    void set(int x, int y, Tile t) {
+      map[y * m + x] = t;
+    }
+    //void clear(int x, int y) {
+    //}
+    Tile get(int x, int y) {
+      return map[y * m + x];
+    }
 };
 
 class State {
   public: 
     Pair cursor;
     Pair max;
+    Map map;
 };
 
 void info() {
-  initscr();
   printw("game works like this");
   refresh();
   getch();
@@ -28,14 +72,43 @@ void info() {
 }
 
 void init() {
- initscr();
- noecho();
- curs_set(FALSE);
- keypad(stdscr, TRUE);
+  initscr();
+  start_color();
+  noecho();
+  curs_set(FALSE);
+  keypad(stdscr, TRUE);
+}
+
+bool inBounds(State *s, int c) {
+  Pair future = {s->cursor.x, s->cursor.y};
+
+  switch(c) {
+    case KEY_UP:
+        future.x--;
+        break;
+    case KEY_DOWN:
+        future.x++;
+        break;
+    case KEY_LEFT:
+        future.y--;
+        break;
+    case KEY_RIGHT:
+        future.y++;
+        break;
+    default:
+        break;
+  }
+  bool in_bounds = (0 <= future.x && future.x <= s->max.x
+                &&  0 <= future.y && future.y <= s->max.y);
+  return in_bounds; // future not out of bounds && future no wall
 }
 
 void step(State *s, int c) {
-  clear();
+  if (!inBounds(s, c)) {
+    // TODO moveMap(int c);
+    return;
+  }
+  //clear();
   char * x;
   switch(c) {
     case KEY_UP:
@@ -62,14 +135,39 @@ void step(State *s, int c) {
   refresh();
 }
 
-int main(int argc, const char * argv[]) {
-  State s = { {0, 0}, {0, 0}};
-  // stdscr created by `initscr()`
-  getmaxyx(stdscr, s.max.y, s.max.x);
+void maze(State *s) {
+  clear();
+  Pair cursor = { 0, 0 };
+  for (; cursor.x <= s->max.x; cursor.x++) {
+    for (; cursor.y <= s->max.y; cursor.y++) {
+      if (s->map.get(cursor.x, cursor.y).isWall) { // 15 % walls
+        init_pair(1, COLOR_RED, COLOR_BLACK);
+	attron(COLOR_PAIR(1));
+        mvprintw(cursor.x, cursor.y, "W");
+        attroff(COLOR_PAIR(1));
+      } else {
+        mvprintw(cursor.x, cursor.y, " ");
+      }
+      refresh();
+    }
+    cursor.y = 0;
+  }
+}
 
-  info();
+int main(int argc, const char * argv[]) {
   init();
+  int max_x, max_y;
+  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES*4, COLS*4) };
+
+//  info();
+  s.map.generate();
+
+  // step 0
+//  clear();
+  mvprintw(s.cursor.x, s.cursor.y, "@");
+//
   while(1) {
+//    maze(&s);
     int c = getch();
     step(&s, c);
   }
