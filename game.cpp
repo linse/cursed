@@ -83,6 +83,8 @@ void init() {
   }
   start_color();
   init_pair(1, COLOR_GREEN, COLOR_BLACK);
+
+  scrollok(stdscr, TRUE);
 }
 
 Pair inFuture(State *s, int c) {
@@ -112,20 +114,6 @@ bool inBounds(Pair cursor, Pair max) {
       &&  0 <= cursor.y && cursor.y <= max.y);
 }
 
-void step(State *s, int c) {
-  Pair future = inFuture(s, c);
-  if (!inBounds(future, s->max)) {
-    // TODO moveMap(int c);
-    
-    return;
-  }
-  //clear();
-  char * x = "o";
-  s->cursor = future;
-  mvprintw(s->cursor.x, s->cursor.y, x);
-  refresh();
-}
-
 void maze(State *s) {
   clear();
   Pair cursor = { 0, 0 };
@@ -141,6 +129,35 @@ void maze(State *s) {
     cursor.y = 0;
   }
 }
+
+void step(State *s, int c) {
+  Pair future = inFuture(s, c);
+  if (!inBounds(future, s->max)) {
+    // TODO moveMap(int c);
+    int n = 0;
+    switch(c) {
+      case KEY_UP:
+          n = -1;
+          break;
+      case KEY_DOWN:
+          n = 1;
+          break;
+      case KEY_LEFT:
+          break;
+      case KEY_RIGHT:
+          break;
+      default:
+          break;
+    }
+    scrl(n); 
+    refresh();
+    //maze(s); TODO maze does need offset
+  }
+  s->cursor = future;
+  mvprintw(s->cursor.x, s->cursor.y, "o");
+  refresh();
+}
+
 
 int main(int argc, const char * argv[]) {
   init();
