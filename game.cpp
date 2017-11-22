@@ -107,42 +107,21 @@ Pair inFuture(State *s, int c) {
   return future;
 }
 
-bool inBounds(State *s, int c) {
-  Pair future = inFuture(s, c);
-  bool in_bounds = (0 <= future.x && future.x <= s->max.x
-                &&  0 <= future.y && future.y <= s->max.y);
-  return in_bounds; // future not out of bounds && future no wall
+bool inBounds(Pair cursor, Pair max) {
+  return (0 <= cursor.x && cursor.x <= max.x
+      &&  0 <= cursor.y && cursor.y <= max.y);
 }
 
 void step(State *s, int c) {
-  if (!inBounds(s, c)) {
+  Pair future = inFuture(s, c);
+  if (!inBounds(future, s->max)) {
     // TODO moveMap(int c);
     
     return;
   }
   //clear();
-  char * x;
-  switch(c) {
-    case KEY_UP:
-        s->cursor.x--;
-        x = "u";
-        break;
-    case KEY_DOWN:
-        s->cursor.x++;
-        x = "d";
-        break;
-    case KEY_LEFT:
-        s->cursor.y--;
-        x = "l";
-        break;
-    case KEY_RIGHT:
-        s->cursor.y++;
-        x = "r";
-        break;
-    default:
-        x = "o";
-        break;
-  }
+  char * x = "o";
+  s->cursor = future;
   mvprintw(s->cursor.x, s->cursor.y, x);
   refresh();
 }
