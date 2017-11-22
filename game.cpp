@@ -36,7 +36,10 @@ class Map {
           if (rand() % 100 < 15) { // 15 % walls
             Tile t = { true };
             set(cursor.x, cursor.y, t);
+
+            attron(COLOR_PAIR(1));
             mvprintw(cursor.x, cursor.y, "W");
+            attroff(COLOR_PAIR(1));
           }
           refresh();
           usleep(DELAY);
@@ -77,6 +80,14 @@ void init() {
   noecho();
   curs_set(FALSE);
   keypad(stdscr, TRUE);
+
+  if(has_colors() == FALSE) {
+    endwin();
+    printf("Your terminal does not support color\n");
+    exit(1);
+  }
+  start_color();
+  init_pair(1, COLOR_GREEN, COLOR_BLACK);
 }
 
 bool inBounds(State *s, int c) {
@@ -162,15 +173,15 @@ int main(int argc, const char * argv[]) {
 //  info();
   s.map.generate();
 
-  // step 0
-//  clear();
-  mvprintw(s.cursor.x, s.cursor.y, "@");
-//
-  while(1) {
-//    maze(&s);
-    int c = getch();
-    step(&s, c);
-  }
+//  // step 0
+////  clear();
+//  mvprintw(s.cursor.x, s.cursor.y, "@");
+////
+//  while(1) {
+////    maze(&s);
+//    int c = getch();
+//    step(&s, c);
+//  }
   endwin();
   return 0;
 }
