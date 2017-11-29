@@ -24,12 +24,12 @@ class Map {
   private:
     vector<Tile> map;
   public:
-    int m;
-    int n;
-    Map(int m, int n): m(m), n(n), map(m*n) {
+    WINDOW * pad;
+    int m; // lines
+    int n; // cols
+    Map(int m, int n): m(m), n(n), map(m*n), pad(newpad(m,n)) {
     } 
     void generate() {
-      clear();
       Pair cursor = { 0, 0 };
       for (; cursor.x <= m; cursor.x++) {
         for (; cursor.y <= n; cursor.y++) {
@@ -56,7 +56,6 @@ class State {
   public: 
     Pair cursor;
     Map map;
-    WINDOW * pad;
 };
 
 void info() {
@@ -123,7 +122,7 @@ void step(State *s, int c) {
   // only move the map if we are not at the edge
   if (inBounds(next, {map_cols - COLS, map_lines - LINES})) {
     s->cursor = next;
-    prefresh(s->pad, s->cursor.x, s->cursor.y, 0, 0, LINES-1, COLS-1);
+    prefresh(s->map.pad, s->cursor.x, s->cursor.y, 0, 0, LINES-1, COLS-1);
     refresh();
   }
 }
@@ -146,18 +145,18 @@ int main() {
   init();
   int map_lines = LINES + 50;
   int map_cols = COLS + 50;
-  State s = { .cursor = {0, 0}, Map(map_lines, map_cols), newpad(map_lines, map_cols) };
-
-  fill(s.pad, map_lines, map_cols);
-  prefresh(s.pad, 0, 0, 0, 0, LINES-1, COLS-1);
+ 
+ State s = { .cursor = {0, 0}, Map(map_lines, map_cols)};
+  fill(s.map.pad, map_lines, map_cols);
+  prefresh(s.map.pad, 0, 0, 0, 0, LINES-1, COLS-1);
   // TODO why do I have to enter two chars?
-  int c = wgetch(s.pad);
+  int c = wgetch(s.map.pad);
   while(1) {
     step(&s, c);
     c = getch();
   }
 
-  delwin(s.pad);
+  delwin(s.map.pad);
 
   endwin();
   exit(0);
