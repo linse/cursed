@@ -56,7 +56,9 @@ class Map {
             c = 'w';
           else 
             c = ' ';
+          wattron(pad, COLOR_PAIR(2));
           mvwaddch(pad, x, y, c);
+          wattroff(pad, COLOR_PAIR(2));
         }
       }
       prefresh(pad, 0, 0, 0, 0, LINES-1, COLS-1);
@@ -100,8 +102,13 @@ void init() {
     exit(1);
   }
   start_color();
-  init_pair(1, COLOR_GREEN, COLOR_BLACK);
-
+  init_pair(1, COLOR_RED,     COLOR_BLACK);
+  init_pair(2, COLOR_GREEN,   COLOR_BLACK);
+  init_pair(3, COLOR_YELLOW,  COLOR_BLACK);
+  init_pair(4, COLOR_BLUE,    COLOR_BLACK);
+  init_pair(5, COLOR_CYAN,    COLOR_BLACK);
+  init_pair(6, COLOR_MAGENTA, COLOR_BLACK);
+  init_pair(7, COLOR_WHITE,   COLOR_BLACK);
   scrollok(stdscr, TRUE);
 }
 
@@ -142,16 +149,12 @@ void step(State *s, int c) {
   if (inBounds(next, {map_cols - COLS, map_lines - LINES})) {
     s->cursor = next;
     prefresh(s->map.pad, s->cursor.x, s->cursor.y, 0, 0, LINES-1, COLS-1);
-    refresh();
   }
 }
 
 int main() {
   init();
-  int map_lines = LINES + 50;
-  int map_cols = COLS + 50;
- 
-  State s = { .cursor = {0, 0}, Map(map_lines, map_cols)};
+  State s = { .cursor = {0, 0}, Map(LINES + 50, COLS + 50)};
   // TODO why do I have to enter two chars?
   int c = wgetch(s.map.pad);
   while(1) {
