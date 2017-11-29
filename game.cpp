@@ -88,26 +88,26 @@ void init() {
   scrollok(stdscr, TRUE);
 }
 
-Pair inFuture(State *s, int c) {
-  Pair future = {s->cursor.x, s->cursor.y};
+Pair nextPos(State *s, int c) {
+  Pair next = {s->cursor.x, s->cursor.y};
 
   switch(c) {
     case KEY_UP:
-        future.x--;
+        next.x--;
         break;
     case KEY_DOWN:
-        future.x++;
+        next.x++;
         break;
     case KEY_LEFT:
-        future.y--;
+        next.y--;
         break;
     case KEY_RIGHT:
-        future.y++;
+        next.y++;
         break;
     default:
         break;
   }
-  return future;
+  return next;
 }
 
 bool inBounds(Pair cursor, Pair max) {
@@ -132,9 +132,8 @@ void maze(State *s) {
 }
 
 void step(State *s, int c) {
-  Pair future = inFuture(s, c);
-  if (!inBounds(future, s->max)) {
-    // TODO moveMap(int c);
+  Pair next = nextPos(s, c);
+  if (!inBounds(next, s->max)) {
     int n = 0;
     switch(c) {
       case KEY_UP:
@@ -154,7 +153,7 @@ void step(State *s, int c) {
     refresh();
     //maze(s); TODO maze does need offset
   }
-  s->cursor = future;
+  s->cursor = next;
   mvprintw(s->cursor.x, s->cursor.y, "o");
   refresh();
 }
@@ -162,20 +161,11 @@ void step(State *s, int c) {
 
 int main(int argc, const char * argv[]) {
   init();
-  int max_x, max_y;
   State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS), newpad(LINES * 4, COLS * 4) };
 
-//  info();
-  s.map.generate();
-  maze(&s);
-
-  // step 0
-//  clear();
   mvprintw(s.cursor.x, s.cursor.y, "@");
   getch();
-////
   while(1) {
-//    maze(&s);
     int c = getch();
     step(&s, c);
   }
