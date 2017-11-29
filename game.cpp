@@ -22,10 +22,10 @@ class Tile {
 
 class Map {
   private:
-    int m;
-    int n;
     vector<Tile> map;
   public:
+    int m;
+    int n;
     Map(int m, int n): m(m), n(n), map(m*n) {
     } 
     void generate() {
@@ -55,7 +55,6 @@ class Map {
 class State {
   public: 
     Pair cursor;
-    Pair max;
     Map map;
     WINDOW * pad;
 };
@@ -115,63 +114,19 @@ bool inBounds(Pair cursor, Pair max) {
       &&  0 <= cursor.y && cursor.y <= max.y);
 }
 
-void maze(State *s) {
-  clear();
-  Pair cursor = { 0, 0 };
-  for (; cursor.x <= s->max.x; cursor.x++) {
-    for (; cursor.y <= s->max.y; cursor.y++) {
-      if (s->map.get(cursor.x, cursor.y).isWall) { // 15 % walls
-        attron(COLOR_PAIR(1));
-        mvprintw(cursor.x, cursor.y, "W");
-        attroff(COLOR_PAIR(1));
-      }
-      refresh();
-    }
-    cursor.y = 0;
-  }
-}
-
 void step(State *s, int c) {
   Pair next = nextPos(s, c);
-  if (!inBounds(next, s->max)) {
-    int n = 0;
-    switch(c) {
-      case KEY_UP:
-          n = -1;
-          break;
-      case KEY_DOWN:
-          n = 1;
-          break;
-      case KEY_LEFT:
-          break;
-      case KEY_RIGHT:
-          break;
-      default:
-          break;
-    }
-    scrl(n); 
+
+  // TODO more readable, model as dims pair
+  int map_lines = s->map.m;
+  int map_cols = s->map.n;
+  // only move the map if we are not at the edge
+  if (inBounds(next, {map_cols - COLS, map_lines - LINES})) {
+    s->cursor = next;
+    prefresh(s->pad, s->cursor.x, s->cursor.y, 0, 0, LINES-1, COLS-1);
     refresh();
-    //maze(s); TODO maze does need offset
   }
-  s->cursor = next;
-  mvprintw(s->cursor.x, s->cursor.y, "o");
-  refresh();
 }
-
-
-//int main(int argc, const char * argv[]) {
-//  init();
-//  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS), newpad(LINES * 4, COLS * 4) };
-//
-//  mvprintw(pad, s.cursor.x, s.cursor.y, "@");
-//  getch();
-//  while(1) {
-//    int c = getch();
-//    step(&s, c);
-//  }
-//  endwin();
-//  return 0;
-//}
 
 // fill pad with random grass
 int fill(WINDOW * map, int lines, int cols) {
@@ -191,19 +146,16 @@ int main() {
   init();
   int map_lines = LINES + 50;
   int map_cols = COLS + 50;
-  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS), newpad(map_lines, map_cols) };
+  State s = { .cursor = {0, 0}, Map(map_lines, map_cols), newpad(map_lines, map_cols) };
 
   fill(s.pad, map_lines, map_cols);
-
-  // fill part of main window with section of pad
-  for (int x = 0; x < 20; x++) {
-    prefresh(s.pad, 0, x, 0, 0, LINES-1, COLS-1);
-    wgetch(s.pad);
+  prefresh(s.pad, 0, 0, 0, 0, LINES-1, COLS-1);
+  // TODO why do I have to enter two chars?
+  int c = wgetch(s.pad);
+  while(1) {
+    step(&s, c);
+    c = getch();
   }
-//  while(1) {
-//    int c = getch();
-//    step(&s, c);
-//  }
 
   delwin(s.pad);
 
