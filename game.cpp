@@ -37,7 +37,7 @@ class Map {
       for (; cursor.x <= m; cursor.x++) {
         for (; cursor.y <= n; cursor.y++) {
           Tile t = Tile{ true, false };
-          if (rand() % 100 < 15) // 15 % walls
+          if (rand() % 100 < 15) // 15 % walls - TODO base on grass?
             t = Tile{ true, true };
           set(cursor.x, cursor.y, t);
           refresh();
@@ -113,7 +113,7 @@ void init() {
 }
 
 Pair nextPos(State *s, int c) {
-  Pair next = {s->cursor.x, s->cursor.y};
+  Pair next = { s->cursor.x, s->cursor.y };
 
   switch(c) {
     case KEY_UP:
@@ -134,7 +134,7 @@ Pair nextPos(State *s, int c) {
   return next;
 }
 
-bool inBounds(Pair cursor, Pair max) {
+bool inScrollBounds(Pair cursor, Pair max) {
   return (0 <= cursor.x && cursor.x <= max.x
       &&  0 <= cursor.y && cursor.y <= max.y);
 }
@@ -146,7 +146,7 @@ void step(State *s, int c) {
   int map_lines = s->map.m;
   int map_cols = s->map.n;
   // only move the map if we are not at the edge
-  if (inBounds(next, {map_cols - COLS, map_lines - LINES})) {
+  if (inScrollBounds(next, {map_cols - COLS, map_lines - LINES})) {
     s->cursor = next;
     prefresh(s->map.pad, s->cursor.x, s->cursor.y, 0, 0, LINES-1, COLS-1);
   }
@@ -154,16 +154,19 @@ void step(State *s, int c) {
 
 int main() {
   init();
-  State s = { .cursor = {0, 0}, Map(LINES + 50, COLS + 50)};
+  State s = { .cursor = {0, 0}, 
+              .map = Map(LINES + 50, COLS + 50) };
+
   // TODO why do I have to enter two chars?
   int c = wgetch(s.map.pad);
   while(1) {
     step(&s, c);
+    // TODO these +1's are wrong + we wanna be not in the corner
+    mvwaddch(s.map.pad, s.cursor.x+1, s.cursor.y+1, '@');
     c = getch();
   }
 
   delwin(s.map.pad);
-
   endwin();
   exit(0);
 }
