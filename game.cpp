@@ -57,6 +57,7 @@ class State {
     Pair cursor;
     Pair max;
     Map map;
+    WINDOW * pad;
 };
 
 void info() {
@@ -162,7 +163,7 @@ void step(State *s, int c) {
 int main(int argc, const char * argv[]) {
   init();
   int max_x, max_y;
-  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS) };
+  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS), newpad(LINES * 4, COLS * 4) };
 
 //  info();
   s.map.generate();
