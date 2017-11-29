@@ -159,16 +159,54 @@ void step(State *s, int c) {
 }
 
 
-int main(int argc, const char * argv[]) {
-  init();
-  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS), newpad(LINES * 4, COLS * 4) };
+//int main(int argc, const char * argv[]) {
+//  init();
+//  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS), newpad(LINES * 4, COLS * 4) };
+//
+//  mvprintw(pad, s.cursor.x, s.cursor.y, "@");
+//  getch();
+//  while(1) {
+//    int c = getch();
+//    step(&s, c);
+//  }
+//  endwin();
+//  return 0;
+//}
 
-  mvprintw(s.cursor.x, s.cursor.y, "@");
-  getch();
-  while(1) {
-    int c = getch();
-    step(&s, c);
+// fill pad with random grass
+int fill(WINDOW * map, int lines, int cols) {
+  char c = 'a';
+  for (int x = 0; x < lines; x++) {
+    for (int y = 0; y < cols; y++) {
+      if (rand() % 100 < 15) // 15 % grass
+        c = 'w';
+      else 
+        c = ' ';
+      mvwaddch(map, x, y, c);
+    }
   }
+}
+
+int main() {
+  init();
+  int map_lines = LINES + 50;
+  int map_cols = COLS + 50;
+  State s = { {0, 0}, {LINES-1, COLS-1}, Map(LINES, COLS), newpad(map_lines, map_cols) };
+
+  fill(s.pad, map_lines, map_cols);
+
+  // fill part of main window with section of pad
+  for (int x = 0; x < 20; x++) {
+    prefresh(s.pad, 0, x, 0, 0, LINES-1, COLS-1);
+    wgetch(s.pad);
+  }
+//  while(1) {
+//    int c = getch();
+//    step(&s, c);
+//  }
+
+  delwin(s.pad);
+
   endwin();
-  return 0;
+  exit(0);
 }
