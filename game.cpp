@@ -27,16 +27,18 @@ class Map {
     WINDOW * pad;
     int m; // lines
     int n; // cols
+
     Map(int m, int n): m(m), n(n), map(m*n), pad(newpad(m,n)) {
+      fillPad();
     } 
-    void generate() {
+
+    void fillMap() {
       Pair cursor = { 0, 0 };
       for (; cursor.x <= m; cursor.x++) {
         for (; cursor.y <= n; cursor.y++) {
           Tile t = Tile{ true, false };
-          if (rand() % 100 < 15) { // 15 % walls
+          if (rand() % 100 < 15) // 15 % walls
             t = Tile{ true, true };
-          }
           set(cursor.x, cursor.y, t);
           refresh();
           usleep(DELAY);
@@ -44,9 +46,26 @@ class Map {
         cursor.y = 0;
       }
     }
+
+    // fillPad pad with random grass
+    int fillPad() {
+      char c = ' ';
+      for (int x = 0; x < m; x++) {
+        for (int y = 0; y < n; y++) {
+          if (rand() % 100 < 15) // 15 % grass
+            c = 'w';
+          else 
+            c = ' ';
+          mvwaddch(pad, x, y, c);
+        }
+      }
+      prefresh(pad, 0, 0, 0, 0, LINES-1, COLS-1);
+    }
+
     void set(int x, int y, Tile t) {
       map[y * m + x] = t;
     }
+
     Tile get(int x, int y) {
       return map[y * m + x];
     }
@@ -127,28 +146,12 @@ void step(State *s, int c) {
   }
 }
 
-// fill pad with random grass
-int fill(WINDOW * map, int lines, int cols) {
-  char c = 'a';
-  for (int x = 0; x < lines; x++) {
-    for (int y = 0; y < cols; y++) {
-      if (rand() % 100 < 15) // 15 % grass
-        c = 'w';
-      else 
-        c = ' ';
-      mvwaddch(map, x, y, c);
-    }
-  }
-}
-
 int main() {
   init();
   int map_lines = LINES + 50;
   int map_cols = COLS + 50;
  
- State s = { .cursor = {0, 0}, Map(map_lines, map_cols)};
-  fill(s.map.pad, map_lines, map_cols);
-  prefresh(s.map.pad, 0, 0, 0, 0, LINES-1, COLS-1);
+  State s = { .cursor = {0, 0}, Map(map_lines, map_cols)};
   // TODO why do I have to enter two chars?
   int c = wgetch(s.map.pad);
   while(1) {
